@@ -55,7 +55,7 @@ class DocStringCoverageVisitor(NodeVisitor):
         self.symbol_count += 1
         has_doc = self._has_doc_or_excuse(node)
         relevant_decorator = self._relevant_decorator(node)
-        _node = (node.name, has_doc, relevant_decorator, [])
+        _node = (node.name, has_doc, relevant_decorator, node.lineno, [])
         self.tree[-1][-1].append(_node)
         self.tree.append(_node)
         self.generic_visit(node)

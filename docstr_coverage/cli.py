@@ -273,7 +273,7 @@ def parse_ignore_patterns_from_dict(ignore_patterns_dict) -> tuple:
 @click.option(
     "-frm",
     "--format",
-    type=click.Choice(["text", "markdown"]),
+    type=click.Choice(["text", "markdown", "pylint"]),
     default="text",
     help="Format of output",
     show_default=True,
@@ -351,6 +351,8 @@ def execute(paths, **kwargs):
         printer = MarkdownPrinter(results, verbosity=kwargs["verbose"], ignore_config=ignore_config)
     elif report_format == "text":
         printer = LegacyPrinter(results, verbosity=kwargs["verbose"], ignore_config=ignore_config)
+    elif report_format == "pylint":
+        printer = PylintPrinter(results, verbosity=kwargs["verbose"], ignore_config=ignore_config)
     else:
         raise SystemError("Unknown report format: {0}".format(report_format))
 

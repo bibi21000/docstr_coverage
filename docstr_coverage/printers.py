@@ -509,3 +509,165 @@ class MarkdownPrinter(LegacyPrinter):
             final_string += "|"
 
         return final_string
+
+class PylintPrinter(LegacyPrinter):
+    """Printer for Pylint format."""
+
+    def save_to_file(self, path: Optional[str] = None) -> None:
+        if path is None:
+            path = "./docstr-results.pylint"
+        with open(path, "w") as wf:
+            wf.write(self._generate_string())
+
+    def _generate_file_stat_string(self) -> str:
+        final_string: str = ""
+        for file_coverage_stat in self.overall_files_coverage_stat:
+
+            file_string: str = "{0}:".format(file_coverage_stat.path)
+
+            if file_coverage_stat.is_empty is not None and file_coverage_stat.is_empty is True:
+                file_string += "- File is empty\n"
+
+            if file_coverage_stat.nodes_with_docstring is not None:
+                for node_identifier in file_coverage_stat.nodes_with_docstring:
+                    file_string += "- Found docstring for `{0}`\n".format(
+                        node_identifier,
+                    )
+
+            if file_coverage_stat.ignored_nodes is not None:
+                for ignored_node in file_coverage_stat.ignored_nodes:
+                    file_string += "- Ignored `{0}`: reason: `{1}`\n".format(
+                        ignored_node.identifier,
+                        ignored_node.reason,
+                    )
+
+            if file_coverage_stat.nodes_without_docstring is not None:
+                for node_identifier in file_coverage_stat.nodes_without_docstring:
+                    if node_identifier == "module docstring":
+                        file_string += "- No module docstring\n"
+                    else:
+                        file_string += "- No docstring for `{0}`\n".format(node_identifier)
+
+            file_string += "\n"
+
+            file_string += self._generate_markdown_table(
+                ("Needed", "Found", "Missing", "Coverage"),
+                (
+                    (
+                        file_coverage_stat.needed,
+                        file_coverage_stat.found,
+                        file_coverage_stat.missing,
+                        "{:.1f}%".format(file_coverage_stat.coverage),
+                    ),
+                ),
+            )
+
+            if final_string == "":
+                final_string += file_string + "\n"
+            else:
+                final_string += "\n" + file_string + "\n"
+
+        return final_string + "\n"
+
+    def _generate_overall_stat_string(self) -> str:
+        if isinstance(self.overall_coverage_stat, float):
+            return str(self.overall_coverage_stat)
+
+        final_string: str = "## Overall statistics\n"
+
+        if self.overall_coverage_stat.num_files > 1:
+            final_string += "Files number: **{}**\n".format(self.overall_coverage_stat.num_files)
+
+        final_string += "\n"
+
+        final_string += "Total coverage: **{:.1f}%**\n".format(
+            self.overall_coverage_stat.total_coverage,
+        )
+
+        final_string += "\n"
+
+        final_string += "Grade: **{}**\n".format(self.overall_coverage_stat.grade)
+
+        if self.overall_coverage_stat.num_empty_files > 0:
+            final_string += "- %s files are empty\n" % self.overall_coverage_stat.num_empty_files
+
+        if self.overall_coverage_stat.is_skip_magic:
+            final_string += "- skipped all non-init magic methods\n"
+
+        if self.overall_coverage_stat.is_skip_file_docstring:
+            final_string += "- skipped file-level docstrings\n"
+
+        if self.overall_coverage_stat.is_skip_init:
+            final_string += "- skipped __init__ methods\n"
+
+        if self.overall_coverage_stat.is_skip_class_def:
+            final_string += "- skipped class definitions\n"
+
+        if self.overall_coverage_stat.is_skip_private:
+            final_string += "- skipped private methods\n"
+
+        final_string += "\n"
+
+        final_string += self._generate_markdown_table(
+            ("Needed", "Found", "Missing"),
+            (
+                (
+                    self.overall_coverage_stat.needed,
+                    self.overall_coverage_stat.found,
+                    self.overall_coverage_stat.missing,
+                ),
+            ),
+        )
+
+        return final_string
+
+    def _generate_markdown_table(
+        self,
+        cols: Tuple[str, ...],
+        rows: Tuple[Tuple[Union[str, int, float]], ...],
+    ) -> str:
+        """Generate markdown table.
+
+        Using:
+        >>> self._generate_markdown_table(
+        ...     cols=("Needed", "Found", "Missing"),
+        ...     vals=(
+        ...         (10, 20, "65.5%"),
+        ...         (30, 40, "99.9%")
+        ...     )
+        ... )
+        | Needed | Found | Missing |
+        |---|---|---|
+        | 10 | 20 | 65.5% |
+        | 30 | 40 | 99.9% |
+
+        Parameters
+        ----------
+        cols: Tuple[str, ...]
+            Table columns
+        rows: Tuple[Tuple[Union[str, int, float]], ...]
+            Column values
+
+        Returns
+        -------
+        str
+            Generated table.
+        """
+        if not all(len(v) == len(cols) for v in rows):
+            raise ValueError("Col num not equal to cols value")
+        final_string: str = ""
+
+        for col in cols:
+            final_string += "| {} ".format(col)
+        final_string += "|\n"
+
+        for _ in range(len(cols)):
+            final_string += "|---"
+        final_string += "|\n"
+
+        for row in rows:
+            for value in row:
+                final_string += "| {} ".format(value)
+            final_string += "|"
+
+        return final_string

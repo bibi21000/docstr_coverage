@@ -139,7 +139,7 @@ class File:
         self._expected_docstrings = []
         self._status = FileStatus.ANALYZED
 
-    def collect_docstring(self, identifier: str, has_docstring: bool, ignore_reason: str = None):
+    def collect_docstring(self, identifier: str, has_docstring: bool, ignore_reason: str = None, lineno: int = 0):
         """Used internally by docstr-coverage to collect the status of a single, expected docstring.
 
         For module docstrings, use `collect_module_docstring(...)` instead of this method.
@@ -154,11 +154,11 @@ class File:
             Used to indicate that the docstring should be ignored (independent of its presence)"""
         self._expected_docstrings.append(
             ExpectedDocstring(
-                node_identifier=identifier, has_docstring=has_docstring, ignore_reason=ignore_reason
+                node_identifier=identifier, has_docstring=has_docstring, ignore_reason=ignore_reason, lineno=lineno
             )
         )
 
-    def collect_module_docstring(self, has_docstring: bool, ignore_reason: str = None):
+    def collect_module_docstring(self, has_docstring: bool, ignore_reason: str = None, lineno: int = 0):
         """Used internally by docstr-coverage to collect the status of a module docstring.
 
         Parameters
@@ -168,7 +168,7 @@ class File:
         ignore_reason: Optional[str]
             Used to indicate that the docstring should be ignored (independent of its presence)"""
         self.collect_docstring(
-            identifier="module docstring", has_docstring=has_docstring, ignore_reason=ignore_reason
+            identifier="module docstring", has_docstring=has_docstring, ignore_reason=ignore_reason, lineno=lineno
         )
 
     def expected_docstrings(self):
@@ -217,12 +217,13 @@ class ExpectedDocstring:
     """A class containing information about a single docstring and its presence"""
 
     def __init__(
-        self, node_identifier: str, has_docstring: bool, ignore_reason: Optional[str]
+        self, node_identifier: str, has_docstring: bool, ignore_reason: Optional[str], lineno: Optional[int]
     ) -> None:
         super().__init__()
         self.node_identifier = node_identifier
         self.has_docstring = has_docstring
         self.ignore_reason = ignore_reason
+        self.lineno = lineno
 
 
 class _DocstrCount(abc.ABC):

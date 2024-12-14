@@ -63,7 +63,7 @@ def _do_ignore_node(filename: str, base_name: str, node_name: str, ignore_names:
 
 def _analyze_docstrings_on_node(
     base: str,
-    node: Tuple[str, bool, Optional[str], List],
+    node: Tuple[str, bool, Optional[str], List, int],
     filename,
     ignore_config: IgnoreConfig,
     result_storage: File,
@@ -88,7 +88,7 @@ def _analyze_docstrings_on_node(
         The result-collection.File instance on which the observed
         docstring presence should be stored."""
 
-    name, has_doc, decorator, child_nodes = node
+    name, has_doc, decorator, lineno, child_nodes = node
 
     ##################################################
     # Check Current Node
@@ -123,7 +123,7 @@ def _analyze_docstrings_on_node(
     # Set Result
     node_identifier = str(base) + str(name)
     result_storage.collect_docstring(
-        identifier=node_identifier, has_docstring=has_doc, ignore_reason=ignore_reason
+        identifier=node_identifier, has_docstring=has_doc, ignore_reason=ignore_reason, lineno=lineno
     )
 
     ##################################################
