@@ -7,21 +7,24 @@ jobs:
   test-python:
     # Install dependencies and run tests
     docker:
-      - image: cimg/python:3.8-node
+      - image: cimg/python:3.8
     steps:
       - checkout
       #~ - python/install-packages:
           #~ pkg-manager: pip-dist
       - run:
-          name: Run tests
+          name: Install
           command: |
             pip install .
             pip install .[test]
             pip install .[lint]
+      - run:
+          name: Tests
+          command: |
             python -m pytest tests  --cov --junitxml=junit.xml || ((($? == 5)) && echo 'Did not find any tests to run.')
-      - codecov/upload
       - store_test_results:
           path: junit.xml
+      - codecov/upload
   build-package:
     # build python package
     docker:
