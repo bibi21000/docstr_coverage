@@ -2,7 +2,7 @@
 # Stacks detected: cicd:github-actions:.github/workflows,deps:python:.,file:setup.py:.
 version: 2.1
 orbs:
-  python: circleci/python@2
+  python: codecov/codecov@4
 jobs:
   test-python:
     # Install dependencies and run tests
@@ -18,7 +18,8 @@ jobs:
             pip install .
             pip install .[test]
             pip install .[lint]
-            python -m pytest tests --junitxml=junit.xml || ((($? == 5)) && echo 'Did not find any tests to run.')
+            python -m pytest tests  --cov --junitxml=junit.xml || ((($? == 5)) && echo 'Did not find any tests to run.')
+      - codecov/upload
       - store_test_results:
           path: junit.xml
   build-package:
@@ -50,9 +51,9 @@ workflows:
   build-and-test:
     jobs:
       - test-python
-      - build-package:
-          requires:
-            - test-python
+    #  - build-package:
+    #      requires:
+    #        - test-python
     # - deploy:
     #     requires:
     #       - build-package
