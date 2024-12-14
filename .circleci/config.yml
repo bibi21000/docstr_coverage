@@ -21,7 +21,7 @@ jobs:
       - run:
           name: Tests
           command: |
-            pytest --cov --junitxml=junit.xml tests|| ((($? == 5)) && echo 'Did not find any tests to run.')
+            pytest --cov --junitxml=junit.xml .|| ((($? == 5)) && echo 'Did not find any tests to run.')
       - store_test_results:
           path: junit.xml
       - codecov/upload
