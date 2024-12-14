@@ -2,7 +2,7 @@
 # Stacks detected: cicd:github-actions:.github/workflows,deps:python:.,file:setup.py:.
 version: 2.1
 orbs:
-  python: codecov/codecov@4
+  codecov: codecov/codecov@4
 jobs:
   test-python:
     # Install dependencies and run tests
